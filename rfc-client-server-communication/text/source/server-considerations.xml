@@ -1,0 +1,568 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!-- This template is for creating an Internet Draft using xml2rfc,
+     which is available here: http://xml.resource.org. -->
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+<!-- One method to get references from the online citation libraries.
+     There has to be one entity for each item to be referenced. 
+     An alternate method (rfc include) is described in the references. -->
+
+<!ENTITY RFC2119 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml">
+<!ENTITY RFC2629 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2629.xml">
+<!ENTITY RFC3552 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3552.xml">
+<!ENTITY I-D.narten-iana-considerations-rfc2434bis SYSTEM "http://xml.resource.org/public/rfc/bibxml3/reference.I-D.narten-iana-considerations-rfc2434bis.xml">
+]>
+<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+<!-- used by XSLT processors -->
+<!-- For a complete list and description of processing instructions (PIs), 
+     please see http://xml.resource.org/authoring/README.html. -->
+<!-- Below are generally applicable Processing Instructions (PIs) that most I-Ds might want to use.
+     (Here they are set differently than their defaults in xml2rfc v1.32) -->
+<?rfc strict="yes" ?>
+<!-- give errors regarding ID-nits and DTD validation -->
+<!-- control the table of contents (ToC) -->
+<?rfc toc="yes"?>
+<!-- generate a ToC -->
+<?rfc tocdepth="4"?>
+<!-- the number of levels of subsections in ToC. default: 3 -->
+<!-- control references -->
+<?rfc symrefs="yes"?>
+<!-- use symbolic references tags, i.e, [RFC2119] instead of [1] -->
+<?rfc sortrefs="yes" ?>
+<!-- sort the reference entries alphabetically -->
+<!-- control vertical white space 
+     (using these PIs as follows is recommended by the RFC Editor) -->
+<?rfc compact="yes" ?>
+<!-- do not start each main section on a new page -->
+<?rfc subcompact="no" ?>
+<!-- keep one blank line between list items -->
+<!-- end of list of popular I-D processing instructions -->
+<rfc category="info" docName="draft-kit-instantmessenger-01" ipr="full3667">
+  <!-- category values: std, bcp, info, exp, and historic
+     ipr values: full3667, noModification3667, noDerivatives3667
+     you can add the attributes updates="NNNN" and obsoletes="NNNN" 
+     they will automatically be output with "(if approved)" -->
+
+  <!-- ***** FRONT MATTER ***** -->
+
+  <front>
+    <!-- The abbreviated title is used in the page header - it is only necessary if the 
+         full title is longer than 39 characters -->
+
+    <title abbrev="Instant Messenger System">Instant Messenger System</title>
+
+    <!-- add 'role="editor"' below for the editors if appropriate -->
+
+    <!-- Another author who claims to be an editor -->
+
+    <author fullname="Projektgruppe 5" initials="P5" role="editor">
+      <organization>Karlsruhe Institute of Technology</organization>
+
+      <address>
+        <postal>
+          <street></street>
+
+          <!-- Reorder these if your country does things differently -->
+
+          <city>Karlsruhe</city>
+
+          <region>Baden-WC<rttemberg</region>
+
+          <code></code>
+
+          <country>DE</country>
+        </postal>
+
+        <phone></phone>
+
+        <email>tm-projekt5@ira.uka.de</email>
+
+        <!-- uri and facsimile elements may also be added -->
+      </address>
+    </author>
+
+    <date month="November" year="2011" />
+
+    <!-- If the month and year are both specified and are the current ones, xml2rfc will fill 
+         in the current day for you. If only the current year is specified, xml2rfc will fill 
+	 in the current day and month for you. If the year is not the current one, it is 
+	 necessary to specify at least a month (xml2rfc assumes day="1" if not specified for the 
+	 purpose of calculating the expiry date).  With drafts it is normally sufficient to 
+	 specify just the year. -->
+
+    <!-- Meta-data Declarations -->
+
+    <area>General</area>
+
+    <workgroup>Internet Engineering Task Force</workgroup>
+
+    <!-- WG name at the upperleft corner of the doc,
+         IETF is fine for individual submissions.  
+	 If this element is not present, the default is "Network Working Group",
+         which is used by the RFC Editor as a nod to the history of the IETF. -->
+
+    <keyword>template</keyword>
+
+    <!-- Keywords will be incorporated into HTML output
+         files in a meta tag but they have no effect on text or nroff
+         output. If you submit your draft to the RFC Editor, the
+         keywords will be used for the search engine. -->
+
+    <abstract>
+      <t>Specification for an Instant Messenger System.</t>
+    </abstract>
+  </front>
+
+  <middle>
+    <section title="Introduction">
+		  <t></t>
+
+		  <section title="Requirements Language">
+				<t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+				"SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+				document are to be interpreted as described in <xref
+				target="RFC2119">RFC 2119</xref>.</t>
+		  </section>
+    </section>
+
+    <!-- Possibly a 'Contributors' section ... -->
+
+    <section anchor="ServerClient" title="Server Client Communication">
+		<t>
+			This section describes the communication between server and client implementations. The whole communication must be transported by TCP. A server communicates via a port between port 49152 and 			port 65535 and must annouce this port in his PeerPDU (SERVER-OPTION). A client must choose a new port for every channel he wants joining (i.e. one TCP connection per channel).
+		</t>
+		<section title="Communication Commands">
+			<t>
+				There are no real PDUs but ASCII formated commands which are transported by a TCP stream. 
+				Every command must begin with a 32 bit block which represents the length of the real command including all parameters. 
+				Every command and parameter is null terminated.
+			</t>
+
+			<texttable anchor="command_join" title="JOIN (Client -&gt; Server)">
+				<ttcol align="center">JOIN</ttcol>
+				<ttcol align="center">channelName</ttcol>
+			</texttable>
+
+			<t>
+				To join a channel a client must send the JOIN command to the corresponding server as in table <xref target="command_join" format="counter" /> shown. 
+				The first and only parameter is the name of the channel. It must be encoded in ASCII. 
+				The name of public channels start with the char '#', private ones with '@' (compare <!--<xref target="PrivateChannels"/>-->). 
+				If no channel with the given name exists, the server must create one.
+			</t>
+
+			<t>
+				After performing this command succefully, the server involved must send an updated PeerPDU via multicast if this command created a new channel. 
+				The client involved must send an updated PeerPDU anyway. The updated PeerPDU includes the created/joined channel.
+			</t>
+
+			<t>
+				If a client has already joined a channel, every new join by the same ClientID to this specific channel should be ignored by the server.
+			</t>
+
+			<figure align="center" anchor="statemachine_join">
+        		<preamble></preamble>
+        		<artwork align="left">
+				<![CDATA[
+              O
+              |
+              V
+        +------------+
+    +-->| not joined |
+    |   +------------+
+    |         |
+    |         | JOIN channelname
+    | E       |
+    | X      / \   [!channel exists]
+    | I     |   |-------------------+
+    | T      \ /                    |
+    |         |                     |
+    |         | [channel exists]    | create channel
+    |         |                     |
+    |         V                     |
+    |	+------------+              |
+    +---|   joined   |<-------------+
+        +------------+
+            ]]>
+				</artwork>
+        		<postamble>
+					Channel JOIN states
+				</postamble>
+      	</figure>
+
+			<figure align="center" anchor="sequence_interaction_join">
+        		<preamble></preamble>
+        		<artwork align="left">
+				<![CDATA[
++----------+      +----------------+   +-----------+
+|  Client  |      |     Server     |   | all peers |
++----------+      +----------------+   +-----------+
+     |                     |                 |
+   +---+      JOIN                                 
+   |   |   channelName     |                 |
+   |   |---------------->+---+ 
+   |   |                 |   |               |            
+   |   |                 |   | [if channel !exists] 
+   |   |                 |   |-----+         |     
+   |   |                 |   |     | create channel
+   |   |                 | +-+-+<--+         |
+   |   |                 | |   |
+   |   |                 | |   |             |
+   |   |                 | |   |
+   |   |                 | +-+-+ - +         |
+   |   |                 |   |     |
+   |   |                 |   |     |         |
+   |   |                 |   |<- - +
+   |   |                 |   |  send PeerPDU, STANDBY peerID 
+   |   |                 |   |------------>+---+
+   |   |< - - - - - - - -+---+             |   |
+   |   |                                   +---+ 
+   |   |                   |                 |
+   +---+
+     |                     |                 |
+            ]]>
+				</artwork>
+				<postamble>Sequence of interaction between client, server and other channelmembers for JOIN.</postamble>
+      	</figure>
+
+			<texttable anchor="command_say_client" title="SAY (Client -&gt; Server)">
+				<ttcol align="center">SAY</ttcol>
+				<ttcol align="center">text</ttcol>
+			</texttable>
+
+			<t>
+				When a user wants to send a message the client must send the SAY command to the corresponding server via the existing TCP connection. 
+				The SAY command is shown in table <xref target="command_say_client" format="counter" />.
+				The passed parameter (text) must be the message the user sent. It shall be encoded in UTF-8.
+			</t>
+
+			<texttable anchor="command_forward_server" title="SAY (Server -&gt; Client)">
+				<ttcol align="center">SAY</ttcol>
+				<ttcol align="center">authorId</ttcol>
+				<ttcol align="center">text</ttcol>
+			</texttable>
+
+			<t>
+				After receiving the SAY command specified above in table <xref target="command_forward_server" format="counter" />, a server must also send a SAY 
+				command to all members of the corresponding channel via the existing TCP connection.
+				The first parameter (authorId) must be the id of the client which performed the SAY command. Finally the last parameter shall be the text the user wrote.
+			</t>
+
+			<figure align="center" anchor="sequence_interaction_say">
+		     	<preamble></preamble>
+		     	<artwork align="left">
+				<![CDATA[
++----------+      +----------------+   +------------ +
+|  Client  |      |     Server     |   | all channel |
++----------+      +----------------+   |   members   |
+     |                     |           +-------------+
+
+     |                     |                  |
+   +---+
+   |   |      SAY text     |                  |
+   |   |---------------->+---+ SAY autorID,
+   |   |                 |   |     text       |
+   |   |                 |   |------------->+---+
+   |   |                 |   |              |   |
+   |   |                 |   |              |   |
+   |   |                 |   |< - - - - - - +---+
+   |   |< - - - - - - - -+---+
+   |   |                   |                  |
+   +---+
+     |                     |                  |
+            ]]>
+				</artwork>
+				<postamble>Sequence of interaction between client, server and other channelmembers for SAY.</postamble>
+      	</figure>
+
+			<texttable anchor="command_standby" title="STANDBY (Server -&gt; Client)">
+				<ttcol align="center">STANDBY</ttcol>
+				<ttcol align="center">PeerId</ttcol>
+			</texttable>			
+
+			<t>
+				If possible, a server implementation has to choose a channel member as standby peer in case of failovers as in <xref target="standby-failover" format="counter" /> described. 
+				The chosen peer must be announced by the STANDBY command as in table <xref target="command_standby" format="counter" /> shown. 
+				This command must be send after every JOIN of a new channel member and if the chosen standbyPeer chances (e.g. if the standby peer leaves the channel).
+			</t>
+
+			<texttable anchor="command_exit" title="EXIT (Client -&gt; Server)">
+				<ttcol align="center">EXIT</ttcol>
+			</texttable>
+
+			<t>
+				To leave a channel regular a client should send the EXIT command to the channel server via the existing TCP connection before closing it. 
+				The EXIT command is shown in table <xref target="command_exit" format="counter" />, no additional parameters are required. 
+				It is explicitely not defined what happens if the last member of a channel sends EXIT.
+			</t>
+
+	  		<figure align="center" anchor="sequence_interaction_exit">
+        		<preamble></preamble>
+        		<artwork align="left">
+				<![CDATA[
++----------+      +----------------+   +-----------+
+|  Client  |      |     Server     |   | all peers |
++----------+      +----------------+   +-----------+
+     |                     |                 |
+
+   +---+       EXIT        |                 |
+   |   |---------------->+---+
+   |   |                 |   |               |
+   |   |                 |   |
+   |   |< - - - - - - - -+---+               |
+   |   |                     send PeerPDU
+   |   |-------------------|-------------->+---+
+   +---+                                   |   |
+     |                     |               +---+
+
+     |                     |                 |
+            ]]>
+				</artwork>
+				<postamble>Sequence of interaction between client, server and other channelmembers for EXIT.</postamble>
+      	</figure>
+			<t>
+				Immediately after performing this command, a client has to send an updated PeerPDU. 
+				If there isn't any channelmembership by client left the TCP connection should be closed by the involved server.
+			</t>
+
+			<texttable anchor="command_invite" title="INVITE (Client -&gt; Server)">
+				<ttcol align="center">INVITE</ttcol>
+				<ttcol align="center">clientId1</ttcol>
+				<ttcol align="center">...</ttcol>
+				<ttcol align="center">clientIdn</ttcol>
+			</texttable>
+
+			<t>
+				This must be sent from a client to a server when a user wants to invite others to a channel. 
+				It can have numerous parameters but it must have one at absolute minimum.
+			</t>
+			
+			<t>
+				A server must unicast a PeerPDU with the SERVER-INVITE-OPTION in it.
+			</t>
+			
+			<t>
+				See <!--<xref target="PrivateChannels"/> -->for further details.
+			</t>
+		</section>
+		
+		<section title="Runtime requirements">
+			<t>
+				This section specifies all data requirements for a peer in general, a client and a server implementation. 
+			   All peer data requirements must be stored by server and client implemenation as well.
+			   Any peer implementation must store following information to interact correctly during communication flow:
+				<list style="symbols">
+					<t>
+						All Interfaces which are used by the peer implementation.
+					</t>
+					<t>
+						TCP socket connection information consisting of an ip number and a port number of own interfaces.
+					</t>			
+					<t>
+						discovery information about each peer. This information set depends in detail on client or server peerPDU as in &lt;todo&gt; specified.
+					</t>				
+					<t>
+						Each peer discovery information has a time to life (TTL). This Timer information must be saved for storing only current information about other peers. 
+						Dead or unreachable peers can be detected with this information. See section <xref target="peerTimer" format="counter" /> for futher information.
+					</t>
+				</list>
+			</t>
+			<t>
+				A client implementation must store following additional information:
+				<list style="symbols">
+					<t>
+						For every channel in the network: channelName, memberlist and serverId.
+					</t>
+				</list>
+			</t>
+			<t>
+				A server implementation must store following additional information:
+				<list style="symbols">
+					<t>
+						The public channels information set is structured as in table <xref target="table_channel" format="counter" /> specified.
+						In case of a failover situation the peer with standbyId may provide a new channel. See Section <xref target="standby-failover" format="counter" /> for details.
+						The member list consiting of peer ids of every joined peer.
+					</t>
+					<t>
+						The private channels information. In general same as public channel information expect that this information will NEVER be broadcasted with by peerPDU.
+					</t>
+				</list>
+			</t>
+			
+			<texttable anchor="table_channel" title="The channel information">
+				<ttcol align="center">channelName</ttcol>
+				<ttcol align="center">standbyId</ttcol>
+				<ttcol align="center">member list</ttcol>
+			</texttable>
+			
+			<t>
+				For sending a history of channel conversation a server implementation may store passed messages. This messages may send to a new connected peer.
+			</t>
+		</section>
+	
+		<section anchor="standby-failover" title="Standby and Failover">
+			<section title="Standby-Mechanism">
+				<t>
+					The channel server waits for the commands JOIN or EXIT.
+				</t>			
+				<t>
+					If a new user joins a channel the server must choose a new standby peer which resumes the server function when the current channel host fails.
+					The algorithm for setting a new standby peer must be chosen by the programmers (For example the latency, the amount of running channels, the amount of joined channels and many more).
+					When the server has chosen a new standby peer it sends a STANDBY command to all channelmembers with the current standbyId.
+					So every peer knows which peers resumes the server after a failover.
+				</t>			
+				<t>
+					If a peer exits the channel the server has to check if the leaving peer was the old standby peer. 
+					If it was the standby peer the server has to choose a new one and publish this via the STANDBY command.
+				</t>
+				<figure align="center" anchor="statemachine_failover">
+					<preamble></preamble>
+					<artwork align="left">
+					<![CDATA[
++-----------+  JOIN (EXIT..) +----------------------------------------+
+|           |--------------->|             chooseStandbyPeer          |
+|  waitFor  |                +----------------------------------------+
+|   Peers   |<---------------| entry/ new PeerPDU with new standbyPeer|
+|           |                +----------------------------------------+
++-----------+                       |
+		|                           |
+		|                           |
+		|     fail          fail    |
+		+---------------+-----------+
+			            |
+				        |
+				        |
+			            v
+		    +----------------------+
+		    |                      |
+		    |        failed        |
+		    |                      |
+		    +----------------------+
+						]]>
+						</artwork>
+					  	<postamble>Standby-Mechanism</postamble>
+					</figure>
+				</section>
+				<section title="Failover">	
+					<t>
+						The server isn't reachable anymore and after the peer waited three times for a new peerPDU it checks 
+						the latest standby peer stored in the <xref target="table_channel"/>. 
+						Now the peer must automatically	connect via a JOIN to the standby peer. 
+						The channel id and name remain constant after the fail.
+						If the standby mechanism fails there is no other mechanism to catch the error and the channel is lost.
+					</t>
+				</section>
+			</section>
+			<section anchor="peerTimer" title="peerPDU Timer">
+				<t>
+					To check if a peer failed every peer holds a timer for every other discoverd peer in the network.
+					If a new peerPDU arrives from the corresponding peer the timer must be updated.
+					If the peerPDU doesn't arrive until timer &lt;= 0 the peer state must be set to 'maybeDisconnected'.
+					During three runs a new peerPDU should arrive to get back to the 'timerRefresh' state.
+					If no peerPDU arrives the peer is set to 'disconnected' and may be deleted from the peer list.
+				</t>
+				<figure align="center" anchor="statemachine_timeout">
+		     		<preamble></preamble>
+		     		<artwork align="left">
+					<![CDATA[
+        [true]/wait(1sec)            Timer for PeerPDUs
+        +--------------+  +---------------------------------+
+        |              V  V                                 |
+    +----------------------+ [peerPDU arrives] +----------------------+
+O-->|      timerAlive      |------------------>|     timerRefresh     |
+    +----------------------+                   +----------------------+
+    | entry/ timer = X sec;|               +-->| entry/ timer = X sec |
+    |        failTimer = 0;|               |   +----------------------+
+    | do/    timer--       |               |
+    +----------------------+               |
+                |                          |
+                |                          |
+                |                          |
+                | [timer <= 0]             |
+                |                          |
+                |        [peerPDU arrives] |
+                |       +------------------+
+                V       |
+    +----------------------+
+    |  maybeDisconnected   |  [failTimer == 3]  +--------------+
+    +----------------------+------------------->| disconnected |-->O
+ +->| entry/ timer = X sec |                    +--------------+
+ |  | do/    failTimer++   |
+ |  +----------------------+
+ |              |
+ +--------------+
+     [timer <= 0]
+            	]]>
+					</artwork>
+					<postamble>peerPDU timeout timer</postamble>
+      		</figure>
+			</section>
+		</section>
+		<section anchor="Security" title="Security Considerations">
+	  		<t></t>
+		</section>
+  </middle>
+
+  <!--  *****BACK MATTER ***** -->
+
+  <back>
+    <!-- References split into informative and normative -->
+
+    <!-- There are 2 ways to insert reference entries from the citation libraries:
+     1. define an ENTITY at the top, and use "ampersand character"RFC2629; here (as shown)
+     2. simply use a PI "less than character"?rfc include="reference.RFC.2119.xml"?> here
+        (for I-Ds: include="reference.I-D.narten-iana-considerations-rfc2434bis.xml")
+
+     Both are cited textually in the same manner: by using xref elements.
+     If you use the PI option, xml2rfc will, by default, try to find included files in the same
+     directory as the including file. You can also define the XML_LIBRARY environment variable
+     with a value containing a set of directories to search.  These can be either in the local
+     filing system or remote ones accessed by http (http://domain/dir/... ).-->
+
+    <references title="Normative References">
+      <!--?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml"?-->
+      &RFC2119;
+
+      <reference anchor="min_ref">
+        <!-- the following is the minimum to make xml2rfc happy -->
+
+        <front>
+          <title>Minimal Reference</title>
+
+          <author initials="authInitials" surname="authSurName">
+            <organization></organization>
+          </author>
+
+          <date year="2006" />
+        </front>
+      </reference>
+    </references>
+
+    <references title="Informative References">
+      <!-- Here we use entities that we defined at the beginning. -->
+
+      &RFC2629;
+
+      &RFC3552;
+
+      &I-D.narten-iana-considerations-rfc2434bis;
+
+      <!-- A reference written by by an organization not a person. -->
+
+      <reference anchor="DOMINATION"
+                 target="http://www.example.com/dominator.html">
+        <front>
+          <title>Ultimate Plan for Taking Over the World</title>
+
+          <author>
+            <organization>Mad Dominators, Inc.</organization>
+          </author>
+
+          <date year="1984" />
+        </front>
+      </reference>
+    </references>
+
+    <section anchor="app-additional" title="Additional Stuff">
+      <t>This becomes an Appendix.</t>
+    </section>
+  </back>
+</rfc>

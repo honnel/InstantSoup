@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, InstantSOUPActivity!</string>
+    <string name="app_name">InstantSOUP</string>
+    <string name="users">Users</string>
+    <string name="channels">Channels</string>
+    <string name="start_hint_username">Username</string>
+    <string name="start_button">Join the SOUP…</string>
+    <string name="lobby_label">Lobby</string>
+    <string name="channel_label">Channels</string>
+    <string name="server_label">Server</string>
+    <string name="ok">OK</string>
+    <string name="parameters_warning">Parameters must not be null!</string>
+    <string name="uuid">UUID:</string>
+    <string name="lastTimeSeen">Last time seen:</string>
+    <string name="nick_warning">Nick must not be null!</string>
+    <string name="channel_listener_warning">Channel listener must not be null!</string>
+    <string name="select_username">Please choose your nickname!</string>
+    <string name="send">send</string>
+    <string name="start_checkbox">save username</string>
+    <string name="pref_key_username">username</string>
+    <string name="pref_key_cb_save_username">save_username</string>   
+    <string name="create_channel">create channel</string>  
+    <string name="context_create_channel">create channel…</string>  
+    <string name="context_join_channel">join channel</string>  
+    <string name="context_channel_menu">channel menu</string>  
+    <string name="context_server_menu">server menu</string>  
+    <string name="settings">settings</string>  
+    <string name="hint_channel_name">channel name</string>  
+    <string name="cb_private_channel">private channel</string>  
+    <string name="btn_channel_create">create\'n\'join</string>  
+    <string name="spinner_select_server">select server</string>  
+    <string name="btn_add_member">add member</string>  
+    <string name="label_select_server">select server:</string>
+    <string name="notification_title">New message received</string>
+    <string name="close">close</string>   
+    <string name="unknown">unknown</string>   
+</resources>

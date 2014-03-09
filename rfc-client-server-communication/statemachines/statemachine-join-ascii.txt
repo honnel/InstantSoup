@@ -1,0 +1,19 @@
+              O
+              |
+              V
+        +------------+
+    +-->| not joined |
+    |   +------------+
+    |         |
+    |         | JOIN channelname
+    | E       |
+    | X      / \   [!channel exists]
+    | I     |   |-------------------+
+    | T      \ /                    |
+    |         |                     |
+    |         | [channel exists]    | create channel
+    |         |                     |
+    |         V                     |
+    |	+------------+              |
+    +---|   joined   |<-------------+
+        +------------+

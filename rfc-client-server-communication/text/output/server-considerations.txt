@@ -1,0 +1,728 @@
+
+
+
+Internet Engineering Task Force                                P5. , Ed.
+Internet-Draft                                    Karlsruhe Institute of
+Intended status: Informational                                Technology
+Expires: May 4, 2012                                       November 2011
+
+
+                        Instant Messenger System
+                     draft-kit-instantmessenger-01
+
+Abstract
+
+   Specification for an Instant Messenger System.
+
+Status of this Memo
+
+   This document is an Internet-Draft and is subject to all provisions
+   of Section 3 of RFC 3667.  By submitting this Internet-Draft, each
+   author represents that any applicable patent or other IPR claims of
+   which he or she is aware have been or will be disclosed, and any of
+   which he or she become aware will be disclosed, in accordance with
+   RFC 3668.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at http://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on May 4, 2012.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                           Expires May 4, 2012                  [Page 1]
+
+Internet-Draft          Instant Messenger System           November 2011
+
+
+Table of Contents
+
+   1.  Introduction . . . . . . . . . . . . . . . . . . . . . . . . .  3
+     1.1.  Requirements Language  . . . . . . . . . . . . . . . . . .  3
+   2.  Server Client Communication  . . . . . . . . . . . . . . . . .  3
+     2.1.  Communication Commands . . . . . . . . . . . . . . . . . .  3
+     2.2.  Runtime requirements . . . . . . . . . . . . . . . . . . .  8
+     2.3.  Standby and Failover . . . . . . . . . . . . . . . . . . .  9
+       2.3.1.  Standby-Mechanism  . . . . . . . . . . . . . . . . . .  9
+       2.3.2.  Failover . . . . . . . . . . . . . . . . . . . . . . . 10
+     2.4.  peerPDU Timer  . . . . . . . . . . . . . . . . . . . . . . 10
+   3.  Security Considerations  . . . . . . . . . . . . . . . . . . . 11
+   4.  References . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+     4.1.  Normative References . . . . . . . . . . . . . . . . . . . 11
+     4.2.  Informative References . . . . . . . . . . . . . . . . . . 12
+   Appendix A.  Additional Stuff  . . . . . . . . . . . . . . . . . . 12
+   Author's Address . . . . . . . . . . . . . . . . . . . . . . . . . 12
+   Intellectual Property and Copyright Statements . . . . . . . . . . 13
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                           Expires May 4, 2012                  [Page 2]
+
+Internet-Draft          Instant Messenger System           November 2011
+
+
+1.  Introduction
+
+1.1.  Requirements Language
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+   document are to be interpreted as described in RFC 2119 [RFC2119].
+
+
+2.  Server Client Communication
+
+   This section describes the communication between server and client
+   implementations.  The whole communication must be transported by TCP.
+   A server communicates via a port between port 49152 and port 65535
+   and must annouce this port in his PeerPDU (SERVER-OPTION).  A client
+   must choose a new port for every channel he wants joining (i.e. one
+   TCP connection per channel).
+
+2.1.  Communication Commands
+
+   There are no real PDUs but ASCII formated commands which are
+   transported by a TCP stream.  Every command must begin with a 32 bit
+   block which represents the length of the real command including all
+   parameters.  Every command and parameter is null terminated.
+
+                          +------+-------------+
+                          | JOIN | channelName |
+                          +------+-------------+
+
+                     Table 1: JOIN (Client -> Server)
+
+   To join a channel a client must send the JOIN command to the
+   corresponding server as in table 1 shown.  The first and only
+   parameter is the name of the channel.  It must be encoded in ASCII.
+   The name of public channels start with the char '#', private ones
+   with '@' (compare ).  If no channel with the given name exists, the
+   server must create one.
+
+   After performing this command succefully, the server involved must
+   send an updated PeerPDU via multicast if this command created a new
+   channel.  The client involved must send an updated PeerPDU anyway.
+   The updated PeerPDU includes the created/joined channel.
+
+   If a client has already joined a channel, every new join by the same
+   ClientID to this specific channel should be ignored by the server.
+
+
+
+
+
+
+                           Expires May 4, 2012                  [Page 3]
+
+Internet-Draft          Instant Messenger System           November 2011
+
+
+                 O
+                 |
+                 V
+           +------------+
+       +-->| not joined |
+       |   +------------+
+       |         |
+       |         | JOIN channelname
+       | E       |
+       | X      / \   [!channel exists]
+       | I     |   |-------------------+
+       | T      \ /                    |
+       |         |                     |
+       |         | [channel exists]    | create channel
+       |         |                     |
+       |         V                     |
+       |   +------------+              |
+       +---|   joined   |<-------------+
+           +------------+
+
+
+                            Channel JOIN states
+
+                                 Figure 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                           Expires May 4, 2012                  [Page 4]
+
+Internet-Draft          Instant Messenger System           November 2011
+
+
+   +----------+      +----------------+   +-----------+
+   |  Client  |      |     Server     |   | all peers |
+   +----------+      +----------------+   +-----------+
+        |                     |                 |
+      +---+      JOIN
+      |   |   channelName     |                 |
+      |   |---------------->+---+
+      |   |                 |   |               |
+      |   |                 |   | [if channel !exists]
+      |   |                 |   |-----+         |
+      |   |                 |   |     | create channel
+      |   |                 | +-+-+<--+         |
+      |   |                 | |   |
+      |   |                 | |   |             |
+      |   |                 | |   |
+      |   |                 | +-+-+ - +         |
+      |   |                 |   |     |
+      |   |                 |   |     |         |
+      |   |                 |   |<- - +
+      |   |                 |   |  send PeerPDU, STANDBY peerID
+      |   |                 |   |------------>+---+
+      |   |< - - - - - - - -+---+             |   |
+      |   |                                   +---+
+      |   |                   |                 |
+      +---+
+        |                     |                 |
+
+
+         Sequence of interaction between client, server and other
+                         channelmembers for JOIN.
+
+                                 Figure 2
+
+                              +-----+------+
+                              | SAY | text |
+                              +-----+------+
+
+                      Table 2: SAY (Client -> Server)
+
+   When a user wants to send a message the client must send the SAY
+   command to the corresponding server via the existing TCP connection.
+   The SAY command is shown in table 2.  The passed parameter (text)
+   must be the message the user sent.  It shall be encoded in UTF-8.
+
+
+
+
+
+
+
+
+                           Expires May 4, 2012                  [Page 5]
+
+Internet-Draft          Instant Messenger System           November 2011
+
+
+                         +-----+----------+------+
+                         | SAY | authorId | text |
+                         +-----+----------+------+
+
+                      Table 3: SAY (Server -> Client)
+
+   After receiving the SAY command specified above in table 3, a server
+   must also send a SAY command to all members of the corresponding
+   channel via the existing TCP connection.  The first parameter
+   (authorId) must be the id of the client which performed the SAY
+   command.  Finally the last parameter shall be the text the user
+   wrote.
+
+
+
+   +----------+      +----------------+   +------------ +
+   |  Client  |      |     Server     |   | all channel |
+   +----------+      +----------------+   |   members   |
+        |                     |           +-------------+
+
+        |                     |                  |
+      +---+
+      |   |      SAY text    |                  |
+      |   |---------------->+---+ SAY autorID,
+      |   |                 |   |     text       |
+      |   |                 |   |------------->+---+
+      |   |                 |   |              |   |
+      |   |                 |   |              |   |
+      |   |                 |   |< - - - - - - +---+
+      |   |< - - - - - - - -+---+
+      |   |                   |                  |
+      +---+
+        |                     |                  |
+
+
+         Sequence of interaction between client, server and other
+                          channelmembers for SAY.
+
+                                 Figure 3
+
+                           +---------+--------+
+                           | STANDBY | PeerId |
+                           +---------+--------+
+
+                    Table 4: STANDBY (Client -> Server)
+
+   If possible, a server implementation has to choose a channel member
+   as standby peer in case of failovers as in 2.3 described.  The chosen
+
+
+
+                           Expires May 4, 2012                  [Page 6]
+
+Internet-Draft          Instant Messenger System           November 2011
+
+
+   peer must be announced by the STANDBY command as in table 4 shown.
+   This command must be send after every JOIN of a new channel member
+   and if the chosen standbyPeer chances (e.g. if the standby peer
+   leaves the channel).
+
+                                 +------+
+                                 | EXIT |
+                                 +------+
+
+                     Table 5: EXIT (Client -> Server)
+
+   To leave a channel regular a client should send the EXIT command to
+   the channel server via the existing TCP connection before closing it.
+   The EXIT command is shown in table 5, no additional parameters are
+   required.  It is explicitely not defined what happens if the last
+   member of a channel sends EXIT.
+
+
+
+   +----------+      +----------------+   +-----------+
+   |  Client  |      |     Server     |   | all peers |
+   +----------+      +----------------+   +-----------+
+        |                     |                 |
+
+      +---+       EXIT        |                 |
+      |   |---------------->+---+
+      |   |                 |   |               |
+      |   |                 |   |
+      |   |< - - - - - - - -+---+               |
+      |   |                     send PeerPDU
+      |   |-------------------|-------------->+---+
+      +---+                                   |   |
+        |                     |               +---+
+
+        |                     |                 |
+
+
+         Sequence of interaction between client, server and other
+                         channelmembers for EXIT.
+
+                                 Figure 4
+
+   Immediately after performing this command, a client has to send an
+   updated PeerPDU.  If there isn't any channelmembership by client left
+   the TCP connection should be closed by the involved server.
+
+
+
+
+
+
+                           Expires May 4, 2012                  [Page 7]
+
+Internet-Draft          Instant Messenger System           November 2011
+
+
+                 +--------+-----------+-----+-----------+
+                 | INVITE | clientId1 | ... | clientIdn |
+                 +--------+-----------+-----+-----------+
+
+                    Table 6: INVITE (Client -> Server)
+
+   This must be sent from a client to a server when a user wants to
+   invite others to a channel.  It can have numerous parameters but it
+   must have one at absolute minimum.
+
+   A server must multicast a PeerPDU with the SERVER-INVITE-OPTION in
+   it.
+
+   See for further details.
+
+2.2.  Runtime requirements
+
+   This section specifies all data requirements for a peer in general, a
+   client and a server implementation.  All peer data requirements must
+   be stored by server and client implemenation as well.  Any peer
+   implementation must store following information to interact correctly
+   during communication flow:
+
+   o  All Interfaces which are used by the peer implementation.
+
+   o  TCP socket connection information consisting of an ip number and a
+      port number of own interfaces.
+
+   o  discovery information about each peer.  This information set
+      depends in detail on client or server peerPDU as in <todo>
+      specified.
+
+   o  Each peer discovery information has a time to life (TTL).  This
+      Timer information must be saved for storing only current
+      information about other peers.  Dead or unreachable peers can be
+      detected with this information.  See section 2.4 for futher
+      information.
+
+   A client implementation must store following additional information:
+
+   o  For every channel in the network: channelName, memberlist and
+      serverId.
+
+   A server implementation must store following additional information:
+
+   o  The public channels information set is structured as in table 7
+      specified.  In case of a failover situation the peer with
+      standbyId may provide a new channel.  See Section 2.3 for details.
+
+
+
+                           Expires May 4, 2012                  [Page 8]
+
+Internet-Draft          Instant Messenger System           November 2011
+
+
+      The member list consiting of peer ids of every joined peer.
+
+   o  The private channels information.  In general same as public
+      channel information expect that this information will NEVER be
+      broadcasted with by peerPDU.
+
+                 +-------------+-----------+-------------+
+                 | channelName | standbyId | member list |
+                 +-------------+-----------+-------------+
+
+                     Table 7: The channel information
+
+   For sending a history of channel conversation a server implementation
+   may store passed messages.  This messages may send to a new connected
+   peer.
+
+2.3.  Standby and Failover
+
+2.3.1.  Standby-Mechanism
+
+   The channel server waits for the commands JOIN or EXIT.
+
+   If a new user joins a channel the server must choose a new standby
+   peer which resumes the server function when the current channel host
+   fails.  The algorithm for setting a new standby peer must be chosen
+   by the programmers (For example the latency, the amount of running
+   channels, the amount of joined channels and many more).  When the
+   server has chosen a new standby peer it sends a STANDBY command to
+   all channelmembers with the current standbyId.  So every peer knows
+   which peers resumes the server after a failover.
+
+   If a peer exits the channel the server has to check if the leaving
+   peer was the old standby peer.  If it was the standby peer the server
+   has to choose a new one and publish this via the STANDBY command.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                           Expires May 4, 2012                  [Page 9]
+
+Internet-Draft          Instant Messenger System           November 2011
+
+
+ +-----------+  JOIN (EXIT..) +----------------------------------------+
+ |           |--------------->|             chooseStandbyPeer          |
+ |  waitFor  |                +----------------------------------------+
+ |   Peers   |<---------------| entry/ new PeerPDU with new standbyPeer|
+ |           |                +----------------------------------------+
+ +-----------+                     |
+                 |                           |
+                 |                           |
+                 |     fail          fail    |
+                 +---------------+-----------+
+                                      |
+                                           |
+                                           |
+                                      v
+                     +----------------------+
+                     |                      |
+                     |        failed        |
+                     |                      |
+                     +----------------------+
+
+
+                             Standby-Mechanism
+
+                                 Figure 5
+
+2.3.2.  Failover
+
+   The server isn't reachable anymore and after the peer waited three
+   times for a new peerPDU it checks the latest standby peer stored in
+   the Table 7.  Now the peer must automatically connect via a JOIN to
+   the standby peer.  The channel id and name remain constant after the
+   fail.  If the standby mechanism fails there is no other mechanism to
+   catch the error and the channel is lost.
+
+2.4.  peerPDU Timer
+
+   To check if a peer failed every peer holds a timer for every other
+   discoverd peer in the network.  If a new peerPDU arrives from the
+   corresponding peer the timer must be updated.  If the peerPDU doesn't
+   arrive until timer <= 0 the peer state must be set to
+   'maybeDisconnected'.  During three runs a new peerPDU should arrive
+   to get back to the 'timerRefresh' state.  If no peerPDU arrives the
+   peer is set to 'disconnected' and may be deleted from the peer list.
+
+
+
+
+
+
+
+
+                           Expires May 4, 2012                 [Page 10]
+
+Internet-Draft          Instant Messenger System           November 2011
+
+
+         [true]/wait(1sec)            Timer for PeerPDUs
+         +--------------+  +---------------------------------+
+         |              V  V                                 |
+     +----------------------+ [peerPDU arrives] +----------------------+
+ O-->|      timerAlive      |------------------>|     timerRefresh     |
+     +----------------------+                   +----------------------+
+     | entry/ timer = X sec;|               +-->| entry/ timer = X sec |
+     |        failTimer = 0;|               |   +----------------------+
+     | do/    timer--       |               |
+     +----------------------+               |
+                 |                          |
+                 |                          |
+                 |                          |
+                 | [timer <= 0]             |
+                 |                          |
+                 |        [peerPDU arrives] |
+                 |       +------------------+
+                 V       |
+     +----------------------+
+     |  maybeDisconnected   |  [failTimer == 3]  +--------------+
+     +----------------------+------------------->| disconnected |-->O
+  +->| entry/ timer = X sec |                    +--------------+
+  |  | do/    failTimer++   |
+  |  +----------------------+
+  |              |
+  +--------------+
+      [timer <= 0]
+
+
+                           peerPDU timeout timer
+
+                                 Figure 6
+
+
+3.  Security Considerations
+
+
+4.  References
+
+4.1.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119, March 1997.
+
+   [min_ref]  authSurName, authInitials., "Minimal Reference", 2006.
+
+
+
+
+
+
+                           Expires May 4, 2012                 [Page 11]
+
+Internet-Draft          Instant Messenger System           November 2011
+
+
+4.2.  Informative References
+
+   [DOMINATION]
+              Mad Dominators, Inc., "Ultimate Plan for Taking Over the
+              World", 1984, <http://www.example.com/dominator.html>.
+
+   [I-D.narten-iana-considerations-rfc2434bis]
+              Narten, T. and H. Alvestrand, "Guidelines for Writing an
+              IANA Considerations Section in RFCs",
+              draft-narten-iana-considerations-rfc2434bis-09 (work in
+              progress), March 2008.
+
+   [RFC2629]  Rose, M., "Writing I-Ds and RFCs using XML", RFC 2629,
+              June 1999.
+
+   [RFC3552]  Rescorla, E. and B. Korver, "Guidelines for Writing RFC
+              Text on Security Considerations", BCP 72, RFC 3552,
+              July 2003.
+
+
+Appendix A.  Additional Stuff
+
+   This becomes an Appendix.
+
+
+Author's Address
+
+   Projektgruppe 5 (editor)
+   Karlsruhe Institute of Technology
+   Karlsruhe, Baden-WA1/4rttemberg
+   DE
+
+   Phone:
+   Email: tm-projekt5@ira.uka.de
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                           Expires May 4, 2012                 [Page 12]
+
+Internet-Draft          Instant Messenger System           November 2011
+
+
+Full Copyright Statement
+
+   Copyright (C) The IETF Trust (2011).
+
+   This document is subject to the rights, licenses and restrictions
+   contained in BCP 78, and except as set forth therein, the authors
+   retain all their rights.
+
+   This document and the information contained herein are provided on an
+   "AS IS" basis and THE CONTRIBUTOR, THE ORGANIZATION HE/SHE REPRESENTS
+   OR IS SPONSORED BY (IF ANY), THE INTERNET SOCIETY, THE IETF TRUST AND
+   THE INTERNET ENGINEERING TASK FORCE DISCLAIM ALL WARRANTIES, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF
+   THE INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED
+   WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+
+
+Intellectual Property
+
+   The IETF takes no position regarding the validity or scope of any
+   Intellectual Property Rights or other rights that might be claimed to
+   pertain to the implementation or use of the technology described in
+   this document or the extent to which any license under such rights
+   might or might not be available; nor does it represent that it has
+   made any independent effort to identify any such rights.  Information
+   on the procedures with respect to rights in RFC documents can be
+   found in BCP 78 and BCP 79.
+
+   Copies of IPR disclosures made to the IETF Secretariat and any
+   assurances of licenses to be made available, or the result of an
+   attempt made to obtain a general license or permission for the use of
+   such proprietary rights by implementers or users of this
+   specification can be obtained from the IETF on-line IPR repository at
+   http://www.ietf.org/ipr.
+
+   The IETF invites any interested party to bring to its attention any
+   copyrights, patents or patent applications, or other proprietary
+   rights that may cover technology that may be required to implement
+   this standard.  Please address the information to the IETF at
+   ietf-ipr@ietf.org.
+
+
+
+
+
+
+
+
+
+
+
+                           Expires May 4, 2012                 [Page 13]
+
