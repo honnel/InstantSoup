@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <!-- Small buttons -->
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/channelListEntryTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:text="*Title" />
+
+        <ImageButton
+            android:id="@+id/button_join"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"            
+            android:src="@drawable/ic_button_join" />
+
+       <ImageButton
+           android:id="@+id/button_leave"
+           style="?android:attr/buttonStyleSmall"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_alignParentTop="true"
+           android:layout_toLeftOf="@+id/button_join"
+           android:src="@drawable/ic_button_leave"
+           android:visibility="gone" />
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/channelListEntryInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="*Info"
+        android:visibility="gone" />
+
+</LinearLayout>
